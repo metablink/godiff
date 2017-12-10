@@ -1,20 +1,16 @@
 package lib
 
-import "encoding/csv"
-
 // RowProvider is an interface to provide one row at a time
 type RowProvider interface {
-	Next() ([]string, error)
+	Next() (map[string]string, error)
 }
 
-// CsvRowProvider provides one csv file row at a time
-type CsvRowProvider struct {
+// headerRowProvider provides base provider behavior and shouldn't be used directly
+type headerRowProvider struct {
 	RowProvider
 	header []string
-	reader *csv.Reader
 }
 
-// Next provides the next row in the provider or nil if it doesn't exist
-func (p CsvRowProvider) Next() (record []string, err error) {
-	return p.reader.Read()
+func (p headerRowProvider) bindHeader(row []string) (record map[string]string, err error) {
+	return BindHeader(p.header, row)
 }
