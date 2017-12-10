@@ -50,8 +50,9 @@ func DiffRowProvider(from RowProvider, to RowProvider) {
 // DiffRow runs a diff between the given Rows
 func DiffRow(from []string, to []string) {
 	dmp := diffmatchpatch.New()
+	maxLen := int(math.Max(float64(len(from)), float64(len(to))))
 
-	for i := 0; i < int(math.Max(float64(len(from)), float64(len(to)))); i++ {
+	for i := 0; i < maxLen; i++ {
 		if i >= len(from) {
 			// TODO
 			break
