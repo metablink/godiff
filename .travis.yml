@@ -4,6 +4,8 @@ env:
 language: go
 go:
   - 1.9.2
+install:
+  - go get -u github.com/axw/gocov/gocov
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
