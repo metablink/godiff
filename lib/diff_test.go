@@ -13,7 +13,7 @@ type rowTestCase struct {
 	to   []string
 }
 
-func populateTestCases(testCaseHeaders [][]string, testCaseRows [][]string) (records []map[string]string, errors []error) {
+func populateBindHeaderTestCases(testCaseHeaders [][]string, testCaseRows [][]string) (records []map[string]string, errors []error) {
 	testCaseCount := len(testCaseHeaders)
 
 	records = make([]map[string]string, testCaseCount)
@@ -88,7 +88,7 @@ var _ = Describe("Diff", func() {
 			}
 
 			BeforeEach(func() {
-				records, errors = populateTestCases(testCaseHeaders, testCaseRows)
+				records, errors = populateBindHeaderTestCases(testCaseHeaders, testCaseRows)
 			})
 
 			It("should cause an error", func() {
@@ -138,7 +138,7 @@ var _ = Describe("Diff", func() {
 			}
 
 			BeforeEach(func() {
-				records, errors = populateTestCases(testCaseHeaders, testCaseRows)
+				records, errors = populateBindHeaderTestCases(testCaseHeaders, testCaseRows)
 			})
 
 			It("should return no error", func() {
@@ -172,7 +172,10 @@ var _ = Describe("Diff", func() {
 	})
 
 	Describe("Test Diff RowProvider", func() {
-		// TODO
+
+		Context("Valid Inputs", func() {
+			// TODO
+		})
 	})
 
 	Describe("Test Diff Row", func() {

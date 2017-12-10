@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/sergi/go-diff/diffmatchpatch"
@@ -42,28 +41,22 @@ func DiffFile(fromFile *os.File, toFile *os.File) {
 }
 
 // DiffRowProvider runs a diff between the given RowProviders
-func DiffRowProvider(from RowProvider, to RowProvider) {
+func DiffRowProvider(from RowProvider, to RowProvider) error {
 
 	for {
 
 		fromRow, fromErr := from.Next()
+		if fromErr != nil || fromRow == nil {
+			return fromErr
+		}
+
 		toRow, toErr := to.Next()
-
-		if fromErr != nil {
-			log.Fatal(fromErr)
-		}
-		if toErr != nil {
-			log.Fatal(toErr)
-		}
-
-		if fromRow == nil || toRow == nil {
-			break
+		if toErr != nil || toRow == nil {
+			return toErr
 		}
 
 		DiffRow(fromRow, toRow)
 	}
-
-	return
 }
 
 // DiffRow runs a diff between the given Rows
