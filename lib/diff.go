@@ -29,7 +29,7 @@ func BindHeader(header []string, row []string) (record map[string]string, err er
 }
 
 // DiffFile runs a diff between the given Files
-func DiffFile(fromFile *os.File, toFile *os.File) {
+func DiffFile(fromFile *os.File, toFile *os.File) error {
 
 	fromReader := csv.NewReader(fromFile)
 	toReader := csv.NewReader(toFile)
@@ -37,7 +37,7 @@ func DiffFile(fromFile *os.File, toFile *os.File) {
 	fromProvider := CsvRowProvider{reader: fromReader}
 	toProvider := CsvRowProvider{reader: toReader}
 
-	DiffRowProvider(fromProvider, toProvider)
+	return DiffRowProvider(fromProvider, toProvider)
 }
 
 // DiffRowProvider runs a diff between the given RowProviders
@@ -89,5 +89,3 @@ func DiffRow(from map[string]string, to map[string]string) {
 		}
 	}
 }
-
-// func DiffRow()
