@@ -7,7 +7,12 @@ type rowTestCase struct {
 	to   []string
 }
 
-var rowTestCases = []rowTestCase{}
+var rowTestCases = []rowTestCase{
+	rowTestCase{
+		from: []string{"one", "two", "three"},
+		to:   []string{"three", "two", "one"},
+	},
+}
 
 func TestDiffRow(t *testing.T) {
 
