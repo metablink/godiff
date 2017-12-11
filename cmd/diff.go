@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/metablink/godiff/lib"
@@ -42,31 +41,19 @@ func DiffCmd() cli.Command {
 
 			// If the path wasn't set by it's flag, it can still be an argument
 			if path == "" {
-				argPath := c.Args().Get(idx)
-
-				fmt.Printf("path: %v\nargPath: %v\n", path, argPath)
-
-				// If the argument exists, use that.
-				if argPath != "" {
-					path = argPath
-				} else {
-					// No path provided. Error out.
-					return cli.NewExitError("diff requires two file paths to run", 1)
-				}
+				// No path provided. Error out.
+				return cli.NewExitError("diff requires two file paths to run (see the --to and --from flags)", 1)
 			}
 
 			var err error
 			files[idx], err = os.Open(path)
 
 			if err != nil {
-				fmt.Println("Error1")
-				return err
+				return cli.NewExitError(err, 1)
 			}
 		}
 
-		err := lib.DiffFile(files[0], files[1])
-
-		if err != nil {
+		if err := lib.DiffFile(files[0], files[1]); err != nil {
 			return cli.NewExitError(err, 1)
 		}
 

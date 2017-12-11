@@ -34,8 +34,8 @@ func DiffFile(fromFile *os.File, toFile *os.File) error {
 	fromReader := csv.NewReader(fromFile)
 	toReader := csv.NewReader(toFile)
 
-	fromProvider := CsvRowProvider{reader: fromReader}
-	toProvider := CsvRowProvider{reader: toReader}
+	fromProvider := &CsvRowProvider{reader: fromReader}
+	toProvider := &CsvRowProvider{reader: toReader}
 
 	return DiffRowProvider(fromProvider, toProvider)
 }
@@ -76,8 +76,9 @@ func DiffRow(from map[string]string, to map[string]string) {
 		}
 
 		diffs := dmp.DiffMain(fromVal, toVal, false)
-		fmt.Println(dmp.DiffPrettyText(diffs))
+		fmt.Printf("|\t%v\t|", dmp.DiffPrettyText(diffs))
 	}
+	fmt.Println()
 
 	// Run through the added values
 	for key := range to {
