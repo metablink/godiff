@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/metablink/godiff/cmd"
@@ -12,12 +11,7 @@ func main() {
 	var app = cli.NewApp()
 	app.Name = "godiff"
 	app.Usage = "a powerful csv differ"
-
-	app.Action = func(c *cli.Context) error {
-		fmt.Println("Please specify a command.")
-		return nil
-	}
-
+	app.Action = cmd.GetStaticTextAction("Please specify a command.")
 	app.Commands = []cli.Command{
 		cmd.DiffCmd(),
 		cmd.SummaryCmd(),

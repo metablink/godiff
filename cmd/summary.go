@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -10,12 +8,9 @@ import (
 func SummaryCmd() cli.Command {
 
 	summaryCmd := cli.Command{
-		Name:  "summary",
-		Usage: "Create a summary of file differences.",
-		Action: func(c *cli.Context) error {
-			fmt.Println("Not implimented")
-			return nil
-		},
+		Name:   "summary",
+		Usage:  "Create a summary of file differences.",
+		Action: GetUnimplementedAction(),
 	}
 	return summaryCmd
 }

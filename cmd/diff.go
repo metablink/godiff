@@ -15,20 +15,16 @@ var (
 
 // DiffCmd generates a detailed diff of the given files
 func DiffCmd() cli.Command {
-
-	diffCmd := cli.Command{
+	return cli.Command{
 		Name:   "diff",
 		Usage:  "Create a complete set of file differences.",
 		Flags:  diffFlags(),
 		Action: diffAction(),
 	}
-
-	return diffCmd
 }
 
 func diffFlags() []cli.Flag {
-
-	diffFlags := []cli.Flag{
+	return []cli.Flag{
 		cli.StringFlag{
 			Name:        "from, f",
 			Usage:       "1st file for comparison",
@@ -40,12 +36,10 @@ func diffFlags() []cli.Flag {
 			Destination: &toPath,
 		},
 	}
-
-	return diffFlags
 }
 
 func diffAction() func(c *cli.Context) error {
-	diffAction := func(c *cli.Context) error {
+	return func(c *cli.Context) error {
 		paths := []string{fromPath, toPath}
 		files, err := checkPaths(paths)
 
@@ -60,8 +54,6 @@ func diffAction() func(c *cli.Context) error {
 
 		return nil
 	}
-
-	return diffAction
 }
 
 func checkPaths(paths []string) (files []*os.File, err error) {
