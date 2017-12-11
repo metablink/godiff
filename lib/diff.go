@@ -42,20 +42,22 @@ func DiffFile(fromFile *os.File, toFile *os.File) error {
 
 // DiffRowProvider runs a diff between the given RowProviders
 func DiffRowProvider(from RowProvider, to RowProvider) error {
+	providers := []RowProvider{from, to}
 
 	for {
+		compRows := make([]map[string]string, len(providers))
+		for idx, provider := range providers {
+			row, err := provider.Next()
 
-		fromRow, fromErr := from.Next()
-		if fromErr != nil || fromRow == nil {
-			return fromErr
+			// Bail if we have an error, or have reached the end
+			if err != nil || row == nil {
+				return err
+			}
+
+			compRows[idx] = row
 		}
 
-		toRow, toErr := to.Next()
-		if toErr != nil || toRow == nil {
-			return toErr
-		}
-
-		DiffRow(fromRow, toRow)
+		DiffRow(compRows[0], compRows[1])
 	}
 }
 
@@ -63,15 +65,11 @@ func DiffRowProvider(from RowProvider, to RowProvider) error {
 func DiffRow(from map[string]string, to map[string]string) {
 	dmp := diffmatchpatch.New()
 
-	addedKeys := make(map[string]bool)
-	removedKeys := make(map[string]bool)
-
 	// Run through the removed values and actual differences
 	for key, fromVal := range from {
 		toVal, toExists := to[key]
 
 		if !toExists {
-			removedKeys[key] = true
 			continue
 		}
 
@@ -79,14 +77,4 @@ func DiffRow(from map[string]string, to map[string]string) {
 		fmt.Printf("|\t%v\t|", dmp.DiffPrettyText(diffs))
 	}
 	fmt.Println()
-
-	// Run through the added values
-	for key := range to {
-		_, fromExists := to[key]
-
-		if !fromExists {
-			addedKeys[key] = true
-			continue
-		}
-	}
 }
