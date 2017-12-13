@@ -8,12 +8,12 @@ import (
 // CsvRowProvider provides rows from a csv file
 type CsvRowProvider struct {
 	headerRowProvider
-	reader *csv.Reader
+	Reader *csv.Reader
 }
 
 // Next provides the next row in the provider or nil if it doesn't exist
 func (p *CsvRowProvider) Next() (record map[string]string, err error) {
-	row, err := p.reader.Read()
+	row, err := p.Reader.Read()
 
 	// Handle the case where we have exhausted rows
 	if err == io.EOF {

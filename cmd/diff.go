@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"encoding/csv"
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/metablink/godiff/lib"
@@ -9,8 +11,10 @@ import (
 )
 
 var (
-	fromPath string
-	toPath   string
+	fromPath     string
+	toPath       string
+	keyColumn    string
+	ignoreFields string
 )
 
 // DiffCmd generates a detailed diff of the given files
@@ -35,6 +39,16 @@ func diffFlags() []cli.Flag {
 			Usage:       "2nd file for comparison",
 			Destination: &toPath,
 		},
+		cli.StringFlag{
+			Name:        "key, k",
+			Usage:       "Key column for the comparison",
+			Destination: &keyColumn,
+		},
+		cli.StringFlag{
+			Name:        "ignore, i",
+			Usage:       "Comma-separated list of columns to ignore",
+			Destination: &ignoreFields,
+		},
 	}
 }
 
@@ -48,9 +62,17 @@ func diffAction() func(c *cli.Context) error {
 			return cli.NewExitError(err, 1)
 		}
 
-		if err := lib.DiffFile(files[0], files[1]); err != nil {
+		fromProvider := &lib.CsvRowProvider{Reader: csv.NewReader(files[0])}
+		toProvider := &lib.CsvRowProvider{Reader: csv.NewReader(files[1])}
+		ignoreMap := lib.StringToSet(ignoreFields, ",")
+
+		diffStats := lib.NewDiffStats(fromProvider, toProvider, keyColumn, ignoreMap)
+
+		if err := diffStats.Diff(); err != nil {
 			return cli.NewExitError(err, 1)
 		}
+
+		diffStats.Print(fmt.Printf)
 
 		return nil
 	}
