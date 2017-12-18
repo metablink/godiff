@@ -11,7 +11,7 @@ func main() {
 	var app = cli.NewApp()
 	app.Name = "godiff"
 	app.Usage = "a powerful csv differ"
-	app.Action = cmd.GetStaticTextAction("Please specify a command.")
+	app.Action = cmd.GetPrintTextAction("Please specify a command.")
 	app.Commands = []cli.Command{
 		cmd.DiffCmd(),
 		cmd.SummaryCmd(),

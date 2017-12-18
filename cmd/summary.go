@@ -10,7 +10,7 @@ func SummaryCmd() cli.Command {
 	summaryCmd := cli.Command{
 		Name:   "summary",
 		Usage:  "Create a summary of file differences.",
-		Action: GetUnimplementedAction(),
+		Action: GetPrintTextAction("Unimplemented"),
 	}
 	return summaryCmd
 }
