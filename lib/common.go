@@ -10,7 +10,7 @@ import (
 func StringToSet(str string, delim string) map[string]bool {
 	split := strings.Split(str, delim)
 
-	if len(split) == 1 {
+	if len(split) == 1 && split[0] == "" {
 		return map[string]bool{}
 	}
 

@@ -7,6 +7,8 @@ import (
 	"os"
 
 	"github.com/metablink/godiff/lib"
+	"github.com/metablink/godiff/lib/diff"
+	"github.com/metablink/godiff/lib/providers"
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -62,13 +64,22 @@ func diffAction() func(c *cli.Context) error {
 			return cli.NewExitError(err, 1)
 		}
 
-		fromProvider := &lib.CsvRowProvider{Reader: csv.NewReader(files[0])}
-		toProvider := &lib.CsvRowProvider{Reader: csv.NewReader(files[1])}
+		fromProvider := &providers.MapRowProvider{
+			RowSrc: &providers.CsvRowProvider{
+				Reader: csv.NewReader(files[0]),
+			},
+		}
+		toProvider := &providers.MapRowProvider{
+			RowSrc: &providers.CsvRowProvider{
+				Reader: csv.NewReader(files[1]),
+			},
+		}
+
 		ignoreMap := lib.StringToSet(ignoreFields, ",")
 
-		diffStats := lib.NewDiffStats(fromProvider, toProvider, keyColumn, ignoreMap)
+		diffStats, err := diff.Diff(fromProvider, toProvider, keyColumn, ignoreMap)
 
-		if err := diffStats.Diff(); err != nil {
+		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
 

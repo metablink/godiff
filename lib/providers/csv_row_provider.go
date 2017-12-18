@@ -1,4 +1,4 @@
-package lib
+package providers
 
 import (
 	"encoding/csv"
@@ -7,12 +7,12 @@ import (
 
 // CsvRowProvider provides rows from a csv file
 type CsvRowProvider struct {
-	headerRowProvider
+	RowProvider
 	Reader *csv.Reader
 }
 
 // Next provides the next row in the provider or nil if it doesn't exist
-func (p *CsvRowProvider) Next() (record map[string]string, err error) {
+func (p *CsvRowProvider) Next() (record []string, err error) {
 	row, err := p.Reader.Read()
 
 	// Handle the case where we have exhausted rows
@@ -20,9 +20,5 @@ func (p *CsvRowProvider) Next() (record map[string]string, err error) {
 		return nil, nil
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
-	return p.bindHeader(row)
+	return row, err
 }
