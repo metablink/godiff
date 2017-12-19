@@ -39,7 +39,7 @@ func runDiff(s *DiffStats, from *providers.MapRowProvider, to *providers.MapRowP
 
 	for {
 		// We assume files coming in are already sorted
-		fromRow, toRow, err := getNextMatchingRow(s, from, to)
+		fromRow, toRow, err = getNextMatchingRow(s, from, to)
 
 		if err != nil {
 			return err
@@ -54,7 +54,7 @@ func runDiff(s *DiffStats, from *providers.MapRowProvider, to *providers.MapRowP
 	}
 
 	// If either file isn't empty, count the remainder
-	if fromRow != nil {
+	if len(toRow) > 0 {
 		remaining, err := getRemainingRowCount(to)
 
 		if err != nil {
@@ -64,7 +64,7 @@ func runDiff(s *DiffStats, from *providers.MapRowProvider, to *providers.MapRowP
 		// Add 1 since the first remaining line has already been read
 		s.AddedRowCount += remaining + 1
 	}
-	if toRow != nil {
+	if len(fromRow) > 0 {
 		remaining, err := getRemainingRowCount(from)
 
 		if err != nil {
@@ -104,18 +104,18 @@ func getNextMatchingRow(
 
 		fromRow, err := from.Next()
 		if err != nil {
-			break
+			return nil, nil, err
 		}
 
 		toRow, err := to.Next()
 		if err != nil {
-			break
+			return nil, nil, err
 		}
 
 		// If there's no key column specified, we assume these rows match
 		if s.KeyColumn == "" {
 			// We return here instead of break so that we don't do post-processing
-			return fromRow, toRow, err
+			return fromRow, toRow, nil
 		}
 
 		// Either file can end first.
@@ -126,7 +126,7 @@ func getNextMatchingRow(
 			// All 'to' row evaluated have been added
 			s.AddedRowCount += offset
 
-			return fromRow, toRow, err
+			return fromRow, toRow, nil
 		}
 
 		fromQueue = append(fromQueue, fromRow)
@@ -139,13 +139,25 @@ func getNextMatchingRow(
 		if _, keyExists := seenFromKeys[fromKey]; !keyExists {
 			seenFromKeys[fromKey] = offset
 		} else {
-			// TODO duplicates
+			count, keyExists := s.DuplicateFromKeys[fromKey]
+
+			if !keyExists {
+				count = 0
+			}
+
+			s.DuplicateFromKeys[fromKey] = count + 1
 		}
 
 		if _, keyExists := seenToKeys[toKey]; !keyExists {
 			seenToKeys[toKey] = offset
 		} else {
-			// TODO duplicates
+			count, keyExists := s.DuplicateToKeys[toKey]
+
+			if !keyExists {
+				count = 0
+			}
+
+			s.DuplicateToKeys[fromKey] = count + 1
 		}
 
 		// If we have a match
@@ -163,8 +175,8 @@ func getNextMatchingRow(
 
 	fromRowOffset, toRowOffset := seenFromKeys[matchingKey], seenToKeys[matchingKey]
 
-	s.AddedRowCount += offset - fromRowOffset
-	s.RemovedRowCount += offset - toRowOffset
+	s.AddedRowCount += fromRowOffset
+	s.RemovedRowCount += toRowOffset
 
 	return fromQueue[fromRowOffset], toQueue[toRowOffset], nil
 }
