@@ -130,9 +130,9 @@ var _ = Describe("Diff", func() {
 			Expect(ds.AddedRowCount).To(Equal(4))
 		})
 
-		// It("should have no rows removed", func() {
-		// 	Expect(ds.RemovedRowCount).To(Equal(1))
-		// })
+		It("should have rows removed", func() {
+			Expect(ds.RemovedRowCount).To(Equal(2))
+		})
 	})
 
 	// Context("Test getRemainingRowCount", func() {

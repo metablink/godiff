@@ -31,6 +31,9 @@ type DiffStats struct {
 	AddedRowCount   int
 	RemovedRowCount int
 	UpdatedRowCount int
+
+	lastFromKey string
+	lastToKey   string
 }
 
 // NewDiffStats returns a new configured DiffStats object in its initial state
@@ -68,11 +71,13 @@ func NewDiffStats(fromHeader []string, toHeader []string, keyColumn string, igno
 	}
 
 	stats := DiffStats{
-		KeyColumn:      keyColumn,
-		IgnoreColumns:  ignoreColumns,
-		AddedColumns:   addedColumns,
-		RemovedColumns: removedColumns,
-		MatchedColumns: matchedColumns,
+		KeyColumn:         keyColumn,
+		IgnoreColumns:     ignoreColumns,
+		AddedColumns:      addedColumns,
+		RemovedColumns:    removedColumns,
+		MatchedColumns:    matchedColumns,
+		DuplicateFromKeys: map[string]int{},
+		DuplicateToKeys:   map[string]int{},
 	}
 
 	return &stats

@@ -82,63 +82,36 @@ func getNextMatchingRow(
 	from *providers.MapRowProvider,
 	to *providers.MapRowProvider) (map[string]string, map[string]string, error) {
 
-	// TODO Make this scalable for large files
-	// We could end up storing a lot of keys
+	// Grab the initial values
+	fromRow, err := from.Next()
+	if err != nil {
+		return nil, nil, err
+	}
+	toRow, err := to.Next()
+	if err != nil {
+		return nil, nil, err
+	}
 
-	var (
-		fromKey     string
-		toKey       string
-		matchingKey string
-	)
-
-	// Maps of currently tracked keys and their corresponding offset from the starting row
-	seenFromKeys, seenToKeys := map[string]int{}, map[string]int{}
-
-	// Stores the seen, but currently unmatched rows
-	fromQueue, toQueue := []map[string]string{}, []map[string]string{}
+	// If there's no key column specified, we assume these rows match
+	if s.KeyColumn == "" {
+		return fromRow, toRow, nil
+	}
 
 	// How many rows we've had to search through from the starting point
-	offset := 0
+	fromOffset, toOffset := 0, 0
 
 	for {
 
-		fromRow, err := from.Next()
-		if err != nil {
-			return nil, nil, err
-		}
-
-		toRow, err := to.Next()
-		if err != nil {
-			return nil, nil, err
-		}
-
-		// If there's no key column specified, we assume these rows match
-		if s.KeyColumn == "" {
-			// We return here instead of break so that we don't do post-processing
-			return fromRow, toRow, nil
-		}
-
 		// Either file can end first.
 		if fromRow == nil || toRow == nil {
-
-			// All 'from' rows evaluated have been removed
-			s.RemovedRowCount += offset
-			// All 'to' row evaluated have been added
-			s.AddedRowCount += offset
-
-			return fromRow, toRow, nil
+			break
 		}
 
-		fromQueue = append(fromQueue, fromRow)
-		toQueue = append(toQueue, toRow)
+		fromKey := fromRow[s.KeyColumn]
+		toKey := toRow[s.KeyColumn]
 
-		fromKey = fromRow[s.KeyColumn]
-		toKey = toRow[s.KeyColumn]
-
-		// If we have key duplicates, always keep the lowest offset
-		if _, keyExists := seenFromKeys[fromKey]; !keyExists {
-			seenFromKeys[fromKey] = offset
-		} else {
+		// If we have key duplicates, record it
+		if strings.Compare(s.lastFromKey, fromKey) == 0 {
 			count, keyExists := s.DuplicateFromKeys[fromKey]
 
 			if !keyExists {
@@ -147,10 +120,7 @@ func getNextMatchingRow(
 
 			s.DuplicateFromKeys[fromKey] = count + 1
 		}
-
-		if _, keyExists := seenToKeys[toKey]; !keyExists {
-			seenToKeys[toKey] = offset
-		} else {
+		if strings.Compare(s.lastToKey, toKey) == 0 {
 			count, keyExists := s.DuplicateToKeys[toKey]
 
 			if !keyExists {
@@ -160,25 +130,37 @@ func getNextMatchingRow(
 			s.DuplicateToKeys[fromKey] = count + 1
 		}
 
-		// If we have a match
-		if _, keyExists := seenFromKeys[toKey]; keyExists {
-			matchingKey = toKey
-			break
-		}
-		if _, keyExists := seenToKeys[fromKey]; keyExists {
-			matchingKey = fromKey
+		s.lastFromKey = fromKey
+		s.lastToKey = toKey
+
+		// If there's a match
+		if strings.Compare(fromKey, toKey) == 0 {
 			break
 		}
 
-		offset++
+		if strings.Compare(fromKey, toKey) < 0 {
+			fromRow, err = from.Next()
+			if err != nil {
+				return nil, nil, err
+			}
+
+			fromOffset++
+		} else {
+			toRow, err = to.Next()
+			if err != nil {
+				return nil, nil, err
+			}
+
+			toOffset++
+		}
 	}
 
-	fromRowOffset, toRowOffset := seenFromKeys[matchingKey], seenToKeys[matchingKey]
+	// All 'from' rows evaluated have been removed
+	s.RemovedRowCount += fromOffset
+	// All 'to' row evaluated have been added
+	s.AddedRowCount += toOffset
 
-	s.AddedRowCount += fromRowOffset
-	s.RemovedRowCount += toRowOffset
-
-	return fromQueue[fromRowOffset], toQueue[toRowOffset], nil
+	return fromRow, toRow, nil
 }
 
 func diffRow(s *DiffStats, fromRow map[string]string, toRow map[string]string) {
